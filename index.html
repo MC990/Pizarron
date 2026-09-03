@@ -2,7 +2,18 @@
 <html>
 <head>
 <style>
-  body { margin: 0; display: flex; flex-direction: column; align-items: center; background: #fff; font-family: sans-serif; touch-action: none; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    touch-action: none;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: #fff;
+    font-family: sans-serif;
+  }
   .toolbar { display: flex; gap: 10px; margin: 10px 0; align-items: center; }
   .toolbar button { padding: 6px 12px; border: 1px solid #ccc; background: #f5f5f5; cursor: pointer; border-radius: 4px; }
   .toolbar button.active { background: #333; color: #fff; }
@@ -35,53 +46,4 @@ x.lineJoin = 'round';
 function getPos(e) {
   const rect = c.getBoundingClientRect();
   if (e.touches) {
-    return { x: e.touches[0].clientX - rect.left, y: e.touches[0].clientY - rect.top };
-  }
-  return { x: e.offsetX, y: e.offsetY };
-}
-
-function startDraw(e) {
-  drawing = true;
-  const pos = getPos(e);
-  x.beginPath();
-  x.moveTo(pos.x, pos.y);
-  e.preventDefault();
-}
-
-function moveDraw(e) {
-  if (!drawing) return;
-  const pos = getPos(e);
-  x.strokeStyle = erasing ? '#ffffff' : colorInput.value;
-  x.lineWidth = erasing ? 20 : sizeInput.value;
-  x.lineTo(pos.x, pos.y);
-  x.stroke();
-  e.preventDefault();
-}
-
-function stopDraw() {
-  drawing = false;
-}
-
-// Mouse
-c.addEventListener('mousedown', startDraw);
-c.addEventListener('mousemove', moveDraw);
-c.addEventListener('mouseup', stopDraw);
-c.addEventListener('mouseleave', stopDraw);
-
-// Touch (celular)
-c.addEventListener('touchstart', startDraw, { passive: false });
-c.addEventListener('touchmove', moveDraw, { passive: false });
-c.addEventListener('touchend', stopDraw);
-
-// Botones
-document.getElementById('eraser').onclick = function() {
-  erasing = !erasing;
-  this.classList.toggle('active');
-};
-document.getElementById('clear').onclick = () => {
-  x.clearRect(0, 0, c.width, c.height);
-};
-</script>
-
-</body>
-</html>   
+    return { x: e.touches[0].clientX    
