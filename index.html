@@ -7,6 +7,7 @@
     padding: 0;
     overflow: hidden;
     touch-action: none;
+    width: 100%;
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -14,10 +15,32 @@
     background: #fff;
     font-family: sans-serif;
   }
-  .toolbar { display: flex; gap: 10px; margin: 10px 0; align-items: center; }
-  .toolbar button { padding: 6px 12px; border: 1px solid #ccc; background: #f5f5f5; cursor: pointer; border-radius: 4px; }
+  .toolbar {
+    display: flex;
+    gap: 8px;
+    margin: 8px 0;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+    width: 100%;
+    box-sizing: border-box;
+    padding: 0 8px;
+  }
+  .toolbar button {
+    padding: 6px 10px;
+    border: 1px solid #ccc;
+    background: #f5f5f5;
+    cursor: pointer;
+    border-radius: 4px;
+  }
   .toolbar button.active { background: #333; color: #fff; }
-  canvas { border: 1px solid #ccc; cursor: crosshair; touch-action: none; }
+  canvas {
+    border: 1px solid #ccc;
+    cursor: crosshair;
+    touch-action: none;
+    max-width: 100%;
+    max-height: calc(100vh - 60px);
+  }
 </style>
 </head>
 <body>
@@ -29,7 +52,7 @@
   <button id="clear">Borrar todo</button>
 </div>
 
-<canvas id="c" width="480" height="360"></canvas>
+<canvas id="c"></canvas>
 
 <script>
 const c = document.getElementById('c');
@@ -39,11 +62,74 @@ const sizeInput = document.getElementById('size');
 let drawing = false;
 let erasing = false;
 
+function resizeCanvas() {
+  const w = Math.min(window.innerWidth, 480);
+  const h = Math.min(window.innerHeight - 60, 360);
+  c.width = w;
+  c.height = h;
+}
+resizeCanvas();
+window.addEventListener('resize', resizeCanvas);
+
 x.lineWidth = 3;
 x.lineCap = 'round';
 x.lineJoin = 'round';
 
 function getPos(e) {
   const rect = c.getBoundingClientRect();
-  if (e.touches) {
-    return { x: e.touches[0].clientX    
+  let clientX, clientY;
+  if (e.touches && e.touches.length > 0) {
+    clientX = e.touches[0].clientX;
+    clientY = e.touches[0].clientY;
+  } else {
+    clientX = e.clientX;
+    clientY = e.clientY;
+  }
+  return {
+    x: (clientX - rect.left) * (c.width / rect.width),
+    y: (clientY - rect.top) * (c.height / rect.height)
+  };
+}
+
+function startDraw(e) {
+  drawing = true;
+  const pos = getPos(e);
+  x.beginPath();
+  x.moveTo(pos.x, pos.y);
+  if (e.cancelable) e.preventDefault();
+}
+
+function moveDraw(e) {
+  if (!drawing) return;
+  const pos = getPos(e);
+  x.strokeStyle = erasing ? '#ffffff' : colorInput.value;
+  x.lineWidth = erasing ? 20 : parseInt(sizeInput.value);
+  x.lineTo(pos.x, pos.y);
+  x.stroke();
+  if (e.cancelable) e.preventDefault();
+}
+
+function stopDraw() {
+  drawing = false;
+}
+
+c.addEventListener('mousedown', startDraw);
+c.addEventListener('mousemove', moveDraw);
+c.addEventListener('mouseup', stopDraw);
+c.addEventListener('mouseleave', stopDraw);
+
+c.addEventListener('touchstart', startDraw, { passive: false });
+c.addEventListener('touchmove', moveDraw, { passive: false });
+c.addEventListener('touchend', stopDraw);
+
+document.getElementById('eraser').onclick = function() {
+  erasing = !erasing;
+  this.classList.toggle('active');
+};
+document.getElementById('clear').onclick = () => {
+  x.clearRect(0, 0, c.width, c.height);
+};
+</script>
+
+</body>
+<   
